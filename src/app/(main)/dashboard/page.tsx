@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PerformanceDashboard } from './components/performance-dashboard';
 import { WeeklyReport } from './components/weekly-report';
 import { ChatInterface } from './components/chat-interface';
+import { SalesInsights } from './components/sales-insights';
 
 function PerformanceDashboardSkeleton() {
     return (
@@ -29,9 +30,10 @@ export default function DashboardPage() {
            <PerformanceDashboard />
          </Suspense>
         
-        <div className="pt-6">
+        <div className="pt-6 space-y-6">
           <h2 className="text-2xl font-bold tracking-tight mb-6">AI Reports</h2>
           <WeeklyReport />
+          <SalesInsights />
         </div>
       </div>
       <div className="lg:col-span-1 flex flex-col">
