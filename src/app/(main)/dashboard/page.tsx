@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PerformanceDashboard } from './components/performance-dashboard';
 import { useAuth } from '@/app/auth-provider';
 import { WeeklyReport } from './components/weekly-report';
+import { SalesSuggestions } from './components/sales-suggestions';
 
 function PerformanceDashboardSkeleton() {
     return (
@@ -42,6 +43,10 @@ export default function DashboardPage() {
 
       <div className="pt-6">
         <WeeklyReport />
+      </div>
+
+      <div className="pt-6">
+        <SalesSuggestions />
       </div>
     </div>
   );
