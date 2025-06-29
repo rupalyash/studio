@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,10 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Sparkles } from "lucide-react";
 import { summarizeMarketInsights } from "@/ai/flows/summarize-market-insights";
 import { TrendCard } from "./trend-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface SummaryResult {
   summary: string;
@@ -33,30 +34,26 @@ export function InsightsEngine() {
   const [selectedIndustry, setSelectedIndustry] = useState<string>(initialIndustries[0]);
   const [newIndustry, setNewIndustry] = useState("");
   const [result, setResult] = useState<SummaryResult | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const analyze = async () => {
-      if (!selectedIndustry.trim()) return;
-      
-      setIsLoading(true);
-      setResult(null);
-      setError(null);
-
-      try {
-        const summary = await summarizeMarketInsights({ industry: selectedIndustry });
-        setResult(summary);
-      } catch (e) {
-        console.error(e);
-        setError("Failed to analyze insights. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleAnalyze = async () => {
+    if (!selectedIndustry.trim()) return;
     
-    analyze();
-  }, [selectedIndustry]);
+    setIsLoading(true);
+    setResult(null);
+    setError(null);
+
+    try {
+      const summary = await summarizeMarketInsights({ industry: selectedIndustry });
+      setResult(summary);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to analyze insights. You may have exceeded your API quota. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddIndustry = () => {
     const trimmedIndustry = newIndustry.trim();
@@ -81,7 +78,7 @@ export function InsightsEngine() {
           <CardHeader>
             <CardTitle>Market Insights Engine</CardTitle>
             <CardDescription>
-              Select an industry or add a new one to see the latest trends.
+              Select an industry and click &quot;Analyze&quot; to see the latest trends.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -116,6 +113,10 @@ export function InsightsEngine() {
                 </Button>
               </div>
             </div>
+             <Button onClick={handleAnalyze} className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isLoading ? "Analyzing..." : "Analyze Industry"}
+              </Button>
           </CardContent>
         </Card>
       </div>
@@ -138,7 +139,12 @@ export function InsightsEngine() {
                 </div>
               </div>
             )}
-            {error && <p className="text-destructive">{error}</p>}
+            {error && (
+              <Alert variant="destructive">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             {result && (
               <div className="space-y-6">
                 <div>
@@ -161,8 +167,8 @@ export function InsightsEngine() {
             )}
             {!isLoading && !result && !error && (
               <div className="flex items-center justify-center rounded-md border border-dashed p-10">
-                <p className="text-muted-foreground">
-                  Your insights will appear here.
+                <p className="text-center text-muted-foreground">
+                  Select an industry and click &quot;Analyze Industry&quot; to see insights.
                 </p>
               </div>
             )}
