@@ -198,9 +198,6 @@ export function ChatInterface() {
     <Card className="flex flex-col h-full min-h-[600px] bg-card/70 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Internal Sales Reporter</CardTitle>
-        <CardDescription>
-          Use this chat to log your sales activities. AI will analyze and store them.
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
         <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
