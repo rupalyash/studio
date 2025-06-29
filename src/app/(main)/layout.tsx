@@ -41,7 +41,6 @@ function AppHeader() {
             </SheetContent>
           </Sheet>
         </div>
-        <h1 className="text-lg font-semibold md:text-xl">Sales Buddy</h1>
       </div>
 
       <div className="flex items-center gap-4">
