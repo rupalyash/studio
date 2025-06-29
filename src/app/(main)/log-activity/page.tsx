@@ -1,3 +1,5 @@
+"use client";
+
 import { ChatInterface } from '../dashboard/components/chat-interface';
 
 export default function LogActivityPage() {

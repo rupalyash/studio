@@ -1,3 +1,5 @@
+"use client";
+
 import { InsightsEngine } from './components/insights-engine';
 
 export default function MarketInsightsPage() {
