@@ -1,3 +1,5 @@
+"use client"; // This needs to be a client component to use hooks
+
 import React from "react";
 import {
   Sidebar,
@@ -11,8 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
+import { useAuth } from "../auth-provider";
 
 function AppHeader() {
+  const { user } = useAuth();
+
   return (
     <header className="flex h-14 items-center justify-between gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 shrink-0">
       <div className="flex items-center gap-2">
@@ -39,8 +44,8 @@ function AppHeader() {
 
       <div className="flex items-center gap-4">
         <Avatar>
-          <AvatarImage src="https://placehold.co/32x32" alt="@sales-rep" data-ai-hint="profile avatar" />
-          <AvatarFallback>SR</AvatarFallback>
+          <AvatarImage src={user?.photoURL ?? "https://placehold.co/32x32"} alt={user?.displayName ?? "User"} data-ai-hint="profile avatar" />
+          <AvatarFallback>{user?.email?.charAt(0).toUpperCase() ?? 'SR'}</AvatarFallback>
         </Avatar>
       </div>
     </header>
