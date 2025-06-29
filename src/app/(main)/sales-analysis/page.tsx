@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import {
   Card,
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, NotebookPen, MessageSquareQuote, Lightbulb, Sparkles } from "lucide-react";
+import { Loader2, Download, NotebookPen, MessageSquareQuote, Lightbulb } from "lucide-react";
 import {
   collection,
   query,
@@ -57,46 +57,50 @@ function InsightCategoryContent({ category }: { category: { summary: string; det
 
 function SalesAnalysisCard() {
   const [insights, setInsights] = useState<AnalyzeSalesInsightsOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAnalyzeData = async () => {
-    setIsLoading(true);
-    setInsights(null);
-    setError(null);
-    try {
-      const q = query(
-        collection(db, "sales_updates"),
-        orderBy("createdAt", "desc"),
-        limit(100)
-      );
+  useEffect(() => {
+    const analyzeData = async () => {
+      setIsLoading(true);
+      setInsights(null);
+      setError(null);
+      try {
+        const q = query(
+          collection(db, "sales_updates"),
+          orderBy("createdAt", "desc"),
+          limit(100)
+        );
 
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        setError("No sales updates found in the database to analyze.");
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          setError("No sales updates found in the database to analyze.");
+          setIsLoading(false);
+          return;
+        }
+
+        const salesUpdates = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            rawText: data.rawText || "",
+            summary: data.summary || "",
+            keyAchievements: data.keyAchievements || [],
+            challenges: data.challenges || [],
+          };
+        });
+
+        const result = await analyzeSalesInsights({ salesUpdates });
+        setInsights(result);
+      } catch (err) {
+        console.error("Failed to analyze sales insights:", err);
+        setError("Failed to analyze the data. You may have exceeded your API quota. Please try again later.");
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      const salesUpdates = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          rawText: data.rawText || "",
-          summary: data.summary || "",
-          keyAchievements: data.keyAchievements || [],
-          challenges: data.challenges || [],
-        };
-      });
-
-      const result = await analyzeSalesInsights({ salesUpdates });
-      setInsights(result);
-    } catch (err) {
-      console.error("Failed to analyze sales insights:", err);
-      setError("Failed to analyze the data. You may have exceeded your API quota. Please try again later.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
+    analyzeData();
+  }, []);
 
   const handleDownloadPdf = () => {
     if (!insights) return;
@@ -239,14 +243,9 @@ function SalesAnalysisCard() {
         )}
          {!isLoading && !insights && !error && (
             <div className="flex flex-col items-center justify-center rounded-md border border-dashed p-10 text-center">
-                <h3 className="text-lg font-medium">Analyze Your Sales Data</h3>
                 <p className="text-sm text-muted-foreground mt-2 mb-4">
-                  Click to have AI analyze up to 100 recent sales updates from the database and categorize them.
+                  No analysis could be generated.
                 </p>
-                <Button onClick={handleAnalyzeData} disabled={isLoading}>
-                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    {isLoading ? "Analyzing..." : "Analyze Sales Data"}
-                </Button>
             </div>
         )}
       </CardContent>
