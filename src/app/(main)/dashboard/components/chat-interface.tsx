@@ -289,9 +289,16 @@ export function ChatInterface() {
                 <p className="mb-2 text-sm text-muted-foreground">
                   <span className="font-semibold">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-muted-foreground">PDF, DOCX, PNG, JPG</p>
+                <p className="text-xs text-muted-foreground">PDF, DOCX, XLS, CSV, PNG, JPG</p>
               </div>
-              <Input ref={fileInputRef} id="dropzone-file" type="file" className="hidden" onChange={handleFileChange} />
+              <Input 
+                ref={fileInputRef} 
+                id="dropzone-file" 
+                type="file" 
+                className="hidden" 
+                onChange={handleFileChange}
+                accept=".pdf,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg"
+              />
             </div>
             ) : (
                 <div className="space-y-4">
