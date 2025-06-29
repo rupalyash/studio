@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -94,7 +95,7 @@ export default function SignUpPage() {
               </motion.div>
             </AnimatePresence>
             <CardDescription className="text-balance text-muted-foreground pt-2">
-              Enter your details to create your SalesGPT account
+              Enter your details to create your Sales Buddy account
             </CardDescription>
           </CardHeader>
           <CardContent>

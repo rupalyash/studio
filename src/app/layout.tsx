@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -10,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'SalesGPT',
+  title: 'Sales Buddy',
   description: 'An AI-powered Sales Buddy to generate real-time, actionable insights.',
 };
 

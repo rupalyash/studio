@@ -1,3 +1,4 @@
+
 "use client"; // This needs to be a client component to use hooks
 
 import React from "react";
@@ -14,6 +15,7 @@ import { SidebarNav } from "@/components/sidebar-nav";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useAuth } from "../auth-provider";
+import { Logo } from "@/components/logo";
 
 function AppHeader() {
   const { user } = useAuth();
@@ -31,7 +33,7 @@ function AppHeader() {
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
                 <SheetHeader className="p-4 text-left">
-                    <SheetTitle>SalesGPT</SheetTitle>
+                    <SheetTitle>Sales Buddy</SheetTitle>
                 </SheetHeader>
                 <div className="p-2">
                  <SidebarNav />
@@ -39,7 +41,7 @@ function AppHeader() {
             </SheetContent>
           </Sheet>
         </div>
-        <h1 className="text-lg font-semibold md:text-xl">SalesGPT</h1>
+        <h1 className="text-lg font-semibold md:text-xl">Sales Buddy</h1>
       </div>
 
       <div className="flex items-center gap-4">
@@ -57,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen>
       <Sidebar>
         <SidebarHeader>
-           <h2 className="text-lg font-semibold text-sidebar-foreground">SalesGPT</h2>
+           <Logo />
         </SidebarHeader>
         <SidebarContent>
           <SidebarNav />
