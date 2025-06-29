@@ -6,4 +6,5 @@ import '@/ai/flows/summarize-market-insights.ts';
 import '@/ai/flows/summarize-sales-data.ts';
 import '@/ai/flows/analyze-sales-insights.ts';
 import '@/ai/flows/generate-sales-suggestions.ts';
+import '@/ai/flows/extract-text-from-file.ts';
 import '@/ai/tools/news-recommender.ts';

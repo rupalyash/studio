@@ -19,11 +19,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { summarizeSalesData } from "@/ai/flows/summarize-sales-data";
 import { db } from "@/lib/firebase";
 import { addDoc, collection, doc, runTransaction, serverTimestamp } from "firebase/firestore";
+import { extractTextFromFile } from "@/ai/flows/extract-text-from-file";
 
 interface Message {
   id: string;
   role: "user" | "bot";
   content: ReactNode;
+}
+
+function readFileAsDataURI(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
 }
 
 export function ChatInterface() {
@@ -46,24 +56,23 @@ export function ChatInterface() {
       setIsProcessing(true);
       const userMessage: Message = { id: `user-${Date.now()}`, role: "user", content: inputValue };
       setMessages((prev) => [...prev, userMessage]);
+      const currentInput = inputValue;
       setInputValue("");
       
       const botMessageId = `bot-${Date.now()}`;
       setMessages((prev) => [...prev, {id: botMessageId, role: 'bot', content: <Loader2 className="h-5 w-5 animate-spin" />}]);
 
       try {
-        const result = await summarizeSalesData({ chatLogs: inputValue });
+        const result = await summarizeSalesData({ chatLogs: currentInput });
         
         const { performanceMetrics, ...salesUpdateData } = result;
 
-        // Save the general update
         await addDoc(collection(db, "sales_updates"), {
             ...salesUpdateData,
-            rawText: inputValue,
+            rawText: currentInput,
             createdAt: serverTimestamp(),
         });
 
-        // If performance metrics were extracted, aggregate them into the yearly document
         if (performanceMetrics && Object.keys(performanceMetrics).length > 0) {
             const year = performanceMetrics.year || new Date().getFullYear();
             const yearDocRef = doc(db, "performance_metrics", year.toString());
@@ -73,7 +82,6 @@ export function ChatInterface() {
                     const yearDoc = await transaction.get(yearDocRef);
                     
                     if (!yearDoc.exists()) {
-                        // Document doesn't exist, create it with the new data.
                         const initialData = {
                             totalRevenue: performanceMetrics.totalRevenue || 0,
                             newLeads: performanceMetrics.newLeads || 0,
@@ -84,49 +92,39 @@ export function ChatInterface() {
                         };
                         transaction.set(yearDocRef, initialData);
                     } else {
-                        // Document exists, update it
                         const existingData = yearDoc.data();
                         const updates: any = {};
-
-                        // Aggregate additive metrics
                         if (performanceMetrics.totalRevenue) {
                             updates.totalRevenue = (existingData.totalRevenue || 0) + (performanceMetrics.totalRevenue || 0);
                         }
                         if (performanceMetrics.newLeads) {
                             updates.newLeads = (existingData.newLeads || 0) + (performanceMetrics.newLeads || 0);
                         }
-                        
-                        // Take the latest value for conversion rate
                         if (performanceMetrics.conversionRate !== undefined) {
                             updates.conversionRate = performanceMetrics.conversionRate;
                         }
-
-                        // For salesByRegion, merge/update based on updateType
                         if (performanceMetrics.salesByRegion && performanceMetrics.salesByRegion.length > 0) {
                             const salesRegionMap = new Map(existingData.salesByRegion?.map((item: any) => [item.region, item.sales]) || []);
                             performanceMetrics.salesByRegion.forEach(item => {
                                 if (item.updateType === 'set') {
                                     salesRegionMap.set(item.region, item.sales);
-                                } else { // 'increment' or default to increment
+                                } else {
                                     salesRegionMap.set(item.region, (salesRegionMap.get(item.region) || 0) + item.sales);
                                 }
                             });
                             updates.salesByRegion = Array.from(salesRegionMap, ([region, sales]) => ({ region, sales }));
                         }
-
-                        // For opportunitiesByStage, also merge/update based on updateType
                         if (performanceMetrics.opportunitiesByStage && performanceMetrics.opportunitiesByStage.length > 0) {
                             const oppStageMap = new Map(existingData.opportunitiesByStage?.map((item: any) => [item.stage, item.value]) || []);
                             performanceMetrics.opportunitiesByStage.forEach(item => {
                                 if (item.updateType === 'set') {
                                     oppStageMap.set(item.stage, item.value);
-                                } else { // 'increment'
+                                } else {
                                     oppStageMap.set(item.stage, (oppStageMap.get(item.stage) || 0) + item.value);
                                 }
                             });
                             updates.opportunitiesByStage = Array.from(oppStageMap, ([stage, value]) => ({ stage, value }));
                         }
-                        
                         if (Object.keys(updates).length > 0) {
                             updates.updatedAt = serverTimestamp();
                             transaction.update(yearDocRef, updates);
@@ -177,12 +175,117 @@ export function ChatInterface() {
     }
   };
   
-  const handleLogFile = () => {
-    if (uploadedFile) {
-        const userMessage: Message = { id: `user-file-${Date.now()}`, role: 'user', content: `Uploaded file: ${uploadedFile.name}`};
-        const botResponse: Message = { id: `bot-file-${Date.now()}`, role: 'bot', content: 'File logged successfully. Thank you!'};
-        setMessages((prev) => [...prev, userMessage, botResponse]);
-        setUploadedFile(null);
+  const handleLogFile = async () => {
+    if (uploadedFile && !isProcessing) {
+      const currentFile = uploadedFile;
+      setUploadedFile(null);
+      setIsProcessing(true);
+
+      const userMessage: Message = { id: `user-file-${Date.now()}`, role: "user", content: `Uploaded file: ${currentFile.name}` };
+      setMessages((prev) => [...prev, userMessage]);
+
+      const botMessageId = `bot-file-${Date.now()}`;
+      const loadingMessage = (text: string) => <div className="flex items-center gap-2"><Loader2 className="h-5 w-5 animate-spin" /><span>{text}</span></div>;
+      setMessages((prev) => [...prev, { id: botMessageId, role: "bot", content: loadingMessage("Analyzing file...") }]);
+
+      try {
+        const fileDataUri = await readFileAsDataURI(currentFile);
+        const { extractedText } = await extractTextFromFile({ fileDataUri });
+
+        if (!extractedText?.trim()) {
+          throw new Error("AI could not extract any text from the file.");
+        }
+
+        setMessages(prev => prev.map(msg => msg.id === botMessageId ? { ...msg, content: loadingMessage("File analyzed. Logging insights...") } : msg));
+
+        const result = await summarizeSalesData({ chatLogs: extractedText });
+        const { performanceMetrics, ...salesUpdateData } = result;
+
+        await addDoc(collection(db, "sales_updates"), {
+          ...salesUpdateData,
+          rawText: `[Content from file: ${currentFile.name}]\n\n${extractedText}`,
+          createdAt: serverTimestamp(),
+        });
+
+        if (performanceMetrics && Object.keys(performanceMetrics).length > 0) {
+          const year = performanceMetrics.year || new Date().getFullYear();
+          const yearDocRef = doc(db, "performance_metrics", year.toString());
+          await runTransaction(db, async (transaction) => {
+            const yearDoc = await transaction.get(yearDocRef);
+            if (!yearDoc.exists()) {
+              const initialData = {
+                totalRevenue: performanceMetrics.totalRevenue || 0,
+                newLeads: performanceMetrics.newLeads || 0,
+                conversionRate: performanceMetrics.conversionRate || 0,
+                salesByRegion: performanceMetrics.salesByRegion?.map(({region, sales}) => ({region, sales})) || [],
+                opportunitiesByStage: performanceMetrics.opportunitiesByStage?.map(({stage, value}) => ({stage, value})) || [],
+                updatedAt: serverTimestamp(),
+              };
+              transaction.set(yearDocRef, initialData);
+            } else {
+              const existingData = yearDoc.data();
+              const updates: any = {};
+              if (performanceMetrics.totalRevenue) { updates.totalRevenue = (existingData.totalRevenue || 0) + (performanceMetrics.totalRevenue || 0); }
+              if (performanceMetrics.newLeads) { updates.newLeads = (existingData.newLeads || 0) + (performanceMetrics.newLeads || 0); }
+              if (performanceMetrics.conversionRate !== undefined) { updates.conversionRate = performanceMetrics.conversionRate; }
+              if (performanceMetrics.salesByRegion?.length) {
+                const salesRegionMap = new Map(existingData.salesByRegion?.map((item: any) => [item.region, item.sales]) || []);
+                performanceMetrics.salesByRegion.forEach(item => {
+                  salesRegionMap.set(item.region, (item.updateType === 'set' ? 0 : salesRegionMap.get(item.region) || 0) + item.sales);
+                });
+                updates.salesByRegion = Array.from(salesRegionMap, ([region, sales]) => ({ region, sales }));
+              }
+              if (performanceMetrics.opportunitiesByStage?.length) {
+                const oppStageMap = new Map(existingData.opportunitiesByStage?.map((item: any) => [item.stage, item.value]) || []);
+                performanceMetrics.opportunitiesByStage.forEach(item => {
+                  oppStageMap.set(item.stage, (item.updateType === 'set' ? 0 : oppStageMap.get(item.stage) || 0) + item.value);
+                });
+                updates.opportunitiesByStage = Array.from(oppStageMap, ([stage, value]) => ({ stage, value }));
+              }
+              if (Object.keys(updates).length > 0) {
+                updates.updatedAt = serverTimestamp();
+                transaction.update(yearDocRef, updates);
+              }
+            }
+          });
+        }
+        
+        const botResponse = (
+            <div className="space-y-2">
+                <p className="font-bold">Update from file '{currentFile.name}' logged & analyzed:</p>
+                <p>{result.summary}</p>
+                {result.keyAchievements.length > 0 && (
+                    <div>
+                        <p className="font-semibold">Key Achievements:</p>
+                        <ul className="list-disc list-inside">
+                            {result.keyAchievements.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+                {result.challenges.length > 0 && (
+                    <div>
+                        <p className="font-semibold">Challenges:</p>
+                        <ul className="list-disc list-inside">
+                            {result.challenges.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+                {performanceMetrics && (
+                    <div className="mt-2 text-xs italic text-muted-foreground/80">
+                        Performance metrics were detected and saved to the dashboard.
+                    </div>
+                )}
+            </div>
+        );
+        setMessages((prev) => prev.map(msg => msg.id === botMessageId ? {...msg, content: botResponse} : msg));
+
+      } catch (error: any) {
+        console.error("Failed to process file:", error);
+        const errorResponse = `Sorry, I couldn't process the file. ${error.message || 'Please try again.'}`;
+        setMessages((prev) => prev.map(msg => msg.id === botMessageId ? {...msg, content: errorResponse} : msg));
+      } finally {
+        setIsProcessing(false);
+      }
     }
   }
 
@@ -311,8 +414,8 @@ export function ChatInterface() {
                             <X className="w-4 h-4" />
                         </Button>
                     </div>
-                    <Button onClick={handleLogFile} className="w-full">
-                        Log File
+                    <Button onClick={handleLogFile} className="w-full" disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log File"}
                     </Button>
                 </div>
             )}
