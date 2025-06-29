@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -40,10 +42,7 @@ const chartConfig = {
   },
 };
 
-export async function PerformanceDashboard() {
-  // Simulate network latency
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
+export function PerformanceDashboard() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
