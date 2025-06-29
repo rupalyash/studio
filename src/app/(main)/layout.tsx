@@ -19,7 +19,7 @@ function AppHeader() {
   const { user } = useAuth();
 
   return (
-    <header className="flex h-14 items-center justify-between gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 shrink-0">
+    <header className="flex h-14 items-center justify-between gap-4 border-b border-border/20 bg-card/70 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 shrink-0">
       <div className="flex items-center gap-2">
         <div className="md:hidden">
           <Sheet>
@@ -65,7 +65,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <AppHeader />
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div 
+          className="flex-1 overflow-y-auto p-4 md:p-8 bg-auth-gradient animate-gradient-bg"
+          style={{backgroundSize: '400% 400%'}}
+        >
           {children}
         </div>
       </SidebarInset>

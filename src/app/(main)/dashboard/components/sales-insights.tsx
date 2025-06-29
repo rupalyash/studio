@@ -72,7 +72,7 @@ export function SalesInsights() {
   };
 
   return (
-    <Card>
+    <Card className="bg-card/70 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Deeper Sales Analysis</CardTitle>
         <CardDescription>
