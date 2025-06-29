@@ -34,9 +34,11 @@ export default function DashboardPage() {
           <WeeklyReport />
         </div>
       </div>
-      <div className="lg:col-span-1">
+      <div className="lg:col-span-1 flex flex-col">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Log Activity</h2>
-        <ChatInterface />
+        <div className="flex-1">
+          <ChatInterface />
+        </div>
       </div>
     </div>
   );
