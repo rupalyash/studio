@@ -48,7 +48,19 @@ export function SalesInsights() {
         return;
       }
 
-      const salesUpdates = querySnapshot.docs.map(doc => doc.data() as any);
+      const salesUpdates = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        // Manually construct the object to ensure it's a plain, serializable object
+        // that matches the AI flow's input schema. This avoids passing non-serializable
+        // objects like Firestore Timestamps to the server action.
+        return {
+          rawText: data.rawText || "",
+          summary: data.summary || "",
+          keyAchievements: data.keyAchievements || [],
+          challenges: data.challenges || [],
+        };
+      });
+
       const result = await analyzeSalesInsights({ salesUpdates });
       setInsights(result);
     } catch (err) {
