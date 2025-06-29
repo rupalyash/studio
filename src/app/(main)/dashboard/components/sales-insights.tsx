@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Bot, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   collection,
   query,
@@ -27,56 +25,60 @@ import { Separator } from "@/components/ui/separator";
 
 export function SalesInsights() {
   const [insights, setInsights] = useState<AnalyzeSalesInsightsOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAnalyzeData = async () => {
-    setIsLoading(true);
-    setInsights(null);
-    setError(null);
-    try {
-      const q = query(
-        collection(db, "sales_updates"),
-        orderBy("createdAt", "desc"),
-        limit(100)
-      );
+  useEffect(() => {
+    const analyzeData = async () => {
+      setIsLoading(true);
+      setInsights(null);
+      setError(null);
+      try {
+        const q = query(
+          collection(db, "sales_updates"),
+          orderBy("createdAt", "desc"),
+          limit(100)
+        );
 
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) {
-        setError("No sales updates found in the database to analyze.");
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          setError("No sales updates found in the database to analyze.");
+          setIsLoading(false);
+          return;
+        }
+
+        const salesUpdates = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          // Manually construct the object to ensure it's a plain, serializable object
+          // that matches the AI flow's input schema. This avoids passing non-serializable
+          // objects like Firestore Timestamps to the server action.
+          return {
+            rawText: data.rawText || "",
+            summary: data.summary || "",
+            keyAchievements: data.keyAchievements || [],
+            challenges: data.challenges || [],
+          };
+        });
+
+        const result = await analyzeSalesInsights({ salesUpdates });
+        setInsights(result);
+      } catch (err) {
+        console.error("Failed to analyze sales insights:", err);
+        setError("An error occurred while analyzing the data. Please try again.");
+      } finally {
         setIsLoading(false);
-        return;
       }
-
-      const salesUpdates = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        // Manually construct the object to ensure it's a plain, serializable object
-        // that matches the AI flow's input schema. This avoids passing non-serializable
-        // objects like Firestore Timestamps to the server action.
-        return {
-          rawText: data.rawText || "",
-          summary: data.summary || "",
-          keyAchievements: data.keyAchievements || [],
-          challenges: data.challenges || [],
-        };
-      });
-
-      const result = await analyzeSalesInsights({ salesUpdates });
-      setInsights(result);
-    } catch (err) {
-      console.error("Failed to analyze sales insights:", err);
-      setError("An error occurred while analyzing the data. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
+    analyzeData();
+  }, [])
 
   return (
     <Card className="bg-card/70 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Deeper Sales Analysis</CardTitle>
         <CardDescription>
-          Use AI to analyze all historical sales data from the database, categorizing it into actionable insights.
+          AI analysis of historical sales data from the database, categorized into actionable insights.
         </CardDescription>
       </CardHeader>
       <CardContent className="min-h-[200px]">
@@ -130,17 +132,11 @@ export function SalesInsights() {
          {!isLoading && !insights && !error && (
           <div className="flex items-center justify-center rounded-md border border-dashed p-10">
             <p className="text-center text-muted-foreground">
-              Click the button to analyze sales data from Firestore.
+              No sales data found to generate a report.
             </p>
           </div>
         )}
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleAnalyzeData} disabled={isLoading}>
-          <Bot className="mr-2 h-4 w-4" />
-          {isLoading ? "Analyzing Data..." : "Analyze All Sales Data"}
-        </Button>
-      </CardFooter>
     </Card>
   );
 }
