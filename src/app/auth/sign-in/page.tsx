@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -57,10 +58,11 @@ export default function SignInPage() {
 
   return (
     <div 
-      className="w-full min-h-screen flex items-center justify-center p-6 bg-auth-gradient animate-gradient-bg" 
+      className="relative w-full min-h-screen flex items-center justify-center p-6 bg-auth-gradient animate-gradient-bg" 
       style={{backgroundSize: '400% 400%'}}
     >
-      <Card className="mx-auto w-full max-w-md bg-card/60 backdrop-blur-sm border border-border/20 shadow-2xl">
+      <div className="absolute inset-0 z-0 bg-black/20 backdrop-blur-sm"></div>
+      <Card className="relative z-10 mx-auto w-full max-w-md bg-card/60 backdrop-blur-sm border border-border/20 shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <AnimatePresence>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -84,7 +86,7 @@ export default function SignInPage() {
                 </CardTitle>
               </motion.div>
             </AnimatePresence>
-            <CardDescription className="text-balance text-muted-foreground pt-2">
+            <CardDescription className="text-balance text-foreground pt-2">
               Enter your credentials to access your sales dashboard
             </CardDescription>
           </CardHeader>
