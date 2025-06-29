@@ -68,7 +68,7 @@ const itemVariants = {
 
 export function PerformanceDashboard() {
   return (
-    <>
+    <div className="space-y-4">
       <motion.div
         className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
         variants={containerVariants}
@@ -124,7 +124,7 @@ export function PerformanceDashboard() {
       </motion.div>
 
       <motion.div
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-2 mt-4"
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-2"
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -193,6 +193,6 @@ export function PerformanceDashboard() {
           </Card>
         </motion.div>
       </motion.div>
-    </>
+    </div>
   );
 }
