@@ -17,7 +17,10 @@ const GenerateWeeklyReportInputSchema = z.object({
 export type GenerateWeeklyReportInput = z.infer<typeof GenerateWeeklyReportInputSchema>;
 
 const GenerateWeeklyReportOutputSchema = z.object({
-  report: z.string().describe('A weekly summary report highlighting key achievements, challenges, and actionable insights.'),
+  title: z.string().describe('A title for the weekly report, including the date range.'),
+  keyAchievements: z.array(z.string()).describe('A list of key achievements for the week.'),
+  challenges: z.array(z.string()).describe('A list of challenges faced during the week.'),
+  actionableInsights: z.array(z.string()).describe('A list of actionable insights derived from the data.'),
 });
 export type GenerateWeeklyReportOutput = z.infer<typeof GenerateWeeklyReportOutputSchema>;
 
@@ -29,7 +32,16 @@ const generateWeeklyReportPrompt = ai.definePrompt({
   name: 'generateWeeklyReportPrompt',
   input: {schema: GenerateWeeklyReportInputSchema},
   output: {schema: GenerateWeeklyReportOutputSchema},
-  prompt: `You are a sales leader. Generate a concise weekly summary report based on the following sales data, highlighting key achievements, challenges, and actionable insights.\n\nSales Data: {{{salesData}}}`,
+  prompt: `You are a sales leader. Analyze the following sales data for the week and generate a structured weekly summary report.
+
+Sales Data:
+{{{salesData}}}
+
+Based on the data, provide the following in the requested JSON format:
+1.  A 'title' for the report that includes a relevant date range.
+2.  A list of 'keyAchievements'.
+3.  A list of 'challenges'.
+4.  A list of 'actionableInsights'.`,
 });
 
 const generateWeeklyReportFlow = ai.defineFlow(

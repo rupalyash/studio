@@ -12,14 +12,14 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { generateWeeklyReport } from "@/ai/flows/generate-weekly-report";
+import { generateWeeklyReport, GenerateWeeklyReportOutput } from "@/ai/flows/generate-weekly-report";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, Timestamp, orderBy, limit } from "firebase/firestore";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 export function WeeklyReport() {
-  const [report, setReport] = useState<string | null>(null);
+  const [report, setReport] = useState<GenerateWeeklyReportOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +50,7 @@ export function WeeklyReport() {
         }).join("\n\n---\n\n");
   
         const result = await generateWeeklyReport({ salesData });
-        setReport(result.report);
+        setReport(result);
       } catch (error) {
         console.error("Failed to generate report:", error);
         setError("There was an error generating the report. Please try again.");
@@ -63,12 +63,47 @@ export function WeeklyReport() {
   }, [])
 
   const handleDownloadPdf = () => {
-    if (report) {
-      const doc = new jsPDF();
-      const lines = doc.splitTextToSize(report, 180);
-      doc.text(lines, 10, 10);
-      doc.save("weekly-sales-report.pdf");
-    }
+    if (!report) return;
+
+    const doc = new jsPDF();
+    const margin = 15;
+    let yPos = margin;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const textWidth = pageWidth - margin * 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    const titleLines = doc.splitTextToSize(report.title, textWidth);
+    doc.text(titleLines, pageWidth / 2, yPos, { align: "center" });
+    yPos += (titleLines.length * 7) + 8;
+
+    const addSection = (title: string, items: string[]) => {
+        if (items.length > 0) {
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text(title, margin, yPos);
+            yPos += 7;
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            items.forEach(item => {
+                const lines = doc.splitTextToSize(`• ${item}`, textWidth - 5); // Indent bullet
+                if (yPos + (lines.length * 5) > doc.internal.pageSize.getHeight() - margin) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                doc.text(lines, margin + 5, yPos);
+                yPos += lines.length * 5 + 2; // Add line spacing
+            });
+            yPos += 5; // Space after section
+        }
+    };
+
+    addSection("Key Achievements", report.keyAchievements);
+    addSection("Challenges", report.challenges);
+    addSection("Actionable Insights", report.actionableInsights);
+
+    doc.save("weekly-sales-report.pdf");
   };
 
   return (
@@ -97,11 +132,36 @@ export function WeeklyReport() {
             </Alert>
         )}
         {report && (
-          <div className="prose prose-sm max-w-none rounded-md border bg-muted/50 p-4">
-            <pre className="whitespace-pre-wrap bg-transparent p-0 font-sans text-foreground">
-              {report}
-            </pre>
-          </div>
+            <div className="space-y-4 rounded-md border bg-muted/50 p-6">
+                <h3 className="text-lg font-bold text-foreground">{report.title}</h3>
+                
+                {report.keyAchievements.length > 0 && (
+                    <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">Key Achievements</h4>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                            {report.keyAchievements.map((item, i) => <li key={`ach-${i}`}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+        
+                {report.challenges.length > 0 && (
+                    <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">Challenges</h4>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                            {report.challenges.map((item, i) => <li key={`chal-${i}`}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+        
+                {report.actionableInsights.length > 0 && (
+                     <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">Actionable Insights</h4>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                            {report.actionableInsights.map((item, i) => <li key={`ins-${i}`}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+            </div>
         )}
          {!isLoading && !report && !error && (
           <div className="flex items-center justify-center rounded-md border border-dashed p-10">
