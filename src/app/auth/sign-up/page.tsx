@@ -11,10 +11,10 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type MotionProps } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const SplitText = ({ children, ...rest }: { children: string; [key: string]: any }) => {
+const SplitText = ({ children, ...rest }: { children: string } & MotionProps) => {
   const words = children.split(" ");
   return words.map((word, i) => (
     <span key={children + i} className="inline-block overflow-hidden">
