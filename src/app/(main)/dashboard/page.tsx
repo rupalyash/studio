@@ -1,7 +1,9 @@
+"use client";
+
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PerformanceDashboard } from './components/performance-dashboard';
-import { WeeklyReport } from './components/weekly-report';
+import { useAuth } from '@/app/auth-provider';
 
 function PerformanceDashboardSkeleton() {
     return (
@@ -20,18 +22,21 @@ function PerformanceDashboardSkeleton() {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  // Get the first name, or use a generic greeting.
+  const firstName = user?.displayName?.split(' ')[0] || 'Buddy';
+
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
-        <h2 className="text-3xl font-bold tracking-tight">Sales Performance</h2>
-         <Suspense fallback={<PerformanceDashboardSkeleton />}>
-           <PerformanceDashboard />
-         </Suspense>
+      <div className="space-y-2">
+        <h3 className="text-3xl font-bold tracking-tight">Hi, {firstName}!</h3>
+        <p className="text-muted-foreground">Welcome back! Here's your sales performance at a glance.</p>
       </div>
       
       <div className="pt-6 space-y-4">
-        <h2 className="text-3xl font-bold tracking-tight">AI Reports</h2>
-        <WeeklyReport />
+         <Suspense fallback={<PerformanceDashboardSkeleton />}>
+           <PerformanceDashboard />
+         </Suspense>
       </div>
     </div>
   );
