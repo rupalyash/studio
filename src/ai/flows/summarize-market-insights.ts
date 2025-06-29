@@ -54,7 +54,7 @@ const summarizeMarketInsightsPrompt = ai.definePrompt({
 
   First, use the 'getLatestNews' tool to fetch recent articles related to this industry. If multiple industries are provided, you can call the tool for each one.
 
-  After gathering the news, generate a concise summary of the overall market insights and highlight any emerging trends and opportunities. The trends array should be as specific and actionable as possible.
+  After gathering the news, generate a concise summary of the overall market insights. Then, identify at least three distinct, emerging market trends or opportunities from the news. Populate the 'trends' array with these findings. Each trend should be a specific and actionable statement.
 
   Make sure the output is in the requested JSON format.
   `,
