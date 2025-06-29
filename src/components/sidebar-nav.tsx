@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, LayoutDashboard } from "lucide-react";
+import { Globe, LayoutDashboard, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -28,20 +28,35 @@ export function SidebarNav() {
   const pathname = usePathname();
 
   return (
-    <SidebarMenu>
-      {links.map((link) => (
-        <SidebarMenuItem key={link.href}>
-          <Link href={link.href}>
+    <>
+      <SidebarMenu>
+        {links.map((link) => (
+          <SidebarMenuItem key={link.href}>
+            <Link href={link.href}>
+              <SidebarMenuButton
+                isActive={pathname === link.href}
+                tooltip={link.label}
+              >
+                <link.icon />
+                <span>{link.label}</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+      <SidebarMenu className="mt-auto">
+        <SidebarMenuItem>
+          <Link href="/auth/sign-out">
             <SidebarMenuButton
-              isActive={pathname === link.href}
-              tooltip={link.label}
+              isActive={pathname === "/auth/sign-out"}
+              tooltip="Sign Out"
             >
-              <link.icon />
-              <span>{link.label}</span>
+              <LogOut />
+              <span>Sign Out</span>
             </SidebarMenuButton>
           </Link>
         </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
+      </SidebarMenu>
+    </>
   );
 }
