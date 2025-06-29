@@ -270,7 +270,7 @@ export default function SalesAnalysisPage() {
     <div>
         <div className="mb-6">
             <h1 className="text-3xl font-bold tracking-tight">Deeper Sales Analysis</h1>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
                 Use AI to analyze all historical sales data from the database, categorizing it into actionable insights.
             </p>
         </div>
