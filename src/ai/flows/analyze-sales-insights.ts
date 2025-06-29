@@ -18,7 +18,7 @@ const SalesUpdateSchema = z.object({
     challenges: z.array(z.string()),
 });
 
-export const AnalyzeSalesInsightsInputSchema = z.object({
+const AnalyzeSalesInsightsInputSchema = z.object({
   salesUpdates: z.array(SalesUpdateSchema).describe('A collection of sales updates from the database.'),
 });
 export type AnalyzeSalesInsightsInput = z.infer<typeof AnalyzeSalesInsightsInputSchema>;
@@ -29,7 +29,7 @@ const InsightCategorySchema = z.object({
     details: z.array(z.string()).describe('A list of specific, detailed points for this category.'),
 });
 
-export const AnalyzeSalesInsightsOutputSchema = z.object({
+const AnalyzeSalesInsightsOutputSchema = z.object({
   overallSummary: z.string().describe('A high-level summary of all combined sales updates.'),
   meetingNotes: InsightCategorySchema.describe('Insights categorized as meeting notes.'),
   clientFeedback: InsightCategorySchema.describe('Insights categorized as client feedback.'),
