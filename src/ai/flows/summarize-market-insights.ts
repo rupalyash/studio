@@ -1,21 +1,19 @@
-// Summarizes market insights from external news and articles.
-
 'use server';
 
+/**
+ * @fileOverview This file defines a Genkit flow for summarizing market insights by fetching live news.
+ *
+ * - summarizeMarketInsights - A function that fetches and summarizes news for a given industry.
+ * - SummarizeMarketInsightsInput - The input type for the summarizeMarketInsights function.
+ * - SummarizeMarketInsightsOutput - The return type for the summarizeMarketInsights function.
+ */
+
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const MarketInsightSourceSchema = z.object({
-  title: z.string().describe('The title of the article or news source.'),
-  url: z.string().url().describe('The URL of the article or news source.'),
-  content: z.string().describe('The content of the article or news source.'),
-});
-
-export type MarketInsightSource = z.infer<typeof MarketInsightSourceSchema>;
+import {z} from 'zod';
+import { getLatestNews } from '@/ai/tools/news-recommender';
 
 const SummarizeMarketInsightsInputSchema = z.object({
-  sources: z.array(MarketInsightSourceSchema).describe('An array of market insight sources to summarize.'),
-  industry: z.string().describe('The industry to focus the market insights on.'),
+  industry: z.string().describe('The industry to focus the market insights on. Can be a comma-separated list of industries.'),
 });
 
 export type SummarizeMarketInsightsInput = z.infer<
@@ -23,9 +21,9 @@ export type SummarizeMarketInsightsInput = z.infer<
 >;
 
 const SummarizeMarketInsightsOutputSchema = z.object({
-  summary: z.string().describe('A summary of the market insights.'),
+  summary: z.string().describe('A summary of the market insights based on the latest news.'),
   trends: z.array(
-    z.string().describe('Emerging market trends and opportunities.')
+    z.string().describe('A list of emerging market trends and opportunities.')
   ),
 });
 
@@ -47,20 +45,17 @@ const summarizeMarketInsightsPrompt = ai.definePrompt({
   output: {
     schema: SummarizeMarketInsightsOutputSchema,
   },
+  tools: [getLatestNews],
   prompt: `You are an AI-powered market analyst, providing insights for sales strategists.
 
-  Your goal is to analyze and summarize external news and articles to identify emerging market trends and opportunities related to the sales strategy for the given industry.
+  Your goal is to analyze and summarize the latest news to identify emerging market trends and opportunities for the specified industry or industries.
 
-  Industry: {{{industry}}}
+  Industry/Industries: {{{industry}}}
 
-  Sources:
-  {{#each sources}}
-  Title: {{{this.title}}}
-  URL: {{{this.url}}}
-  Content: {{{this.content}}}
-  {{/each}}
+  First, use the 'getLatestNews' tool to fetch recent articles related to this industry. If multiple industries are provided, you can call the tool for each one.
 
-  Based on the provided sources, generate a concise summary of the market insights and highlight any emerging trends and opportunities. The trends array should be as specific and concise as possible.
+  After gathering the news, generate a concise summary of the overall market insights and highlight any emerging trends and opportunities. The trends array should be as specific and actionable as possible.
+
   Make sure the output is in the requested JSON format.
   `,
 });
