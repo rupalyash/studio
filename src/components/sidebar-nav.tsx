@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, LayoutDashboard, LogOut } from "lucide-react";
+import { BarChartBig, Globe, LayoutDashboard, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +16,11 @@ const links = [
     href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    href: "/sales-analysis",
+    label: "Sales Analysis",
+    icon: BarChartBig,
   },
   {
     href: "/market-insights",
@@ -34,7 +39,7 @@ export function SidebarNav() {
           <SidebarMenuItem key={link.href}>
             <Link href={link.href}>
               <SidebarMenuButton
-                isActive={pathname === link.href}
+                isActive={pathname.startsWith(link.href)}
                 tooltip={link.label}
               >
                 <link.icon />
