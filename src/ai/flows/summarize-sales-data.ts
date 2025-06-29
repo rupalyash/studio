@@ -27,6 +27,7 @@ const OpportunityStageSchema = z.object({
 });
 
 const PerformanceMetricsSchema = z.object({
+    year: z.number().optional().describe("The year the metrics apply to. If a year is mentioned, use that. Otherwise, this can be omitted."),
     totalRevenue: z.number().optional().describe("The total revenue figure mentioned in the update."),
     newLeads: z.number().optional().describe("The number of new leads mentioned in the update."),
     conversionRate: z.number().optional().describe("The conversion rate percentage mentioned in the update."),
@@ -40,7 +41,7 @@ const SummarizeSalesDataOutputSchema = z.object({
   keyAchievements: z.array(z.string()).describe('Key achievements highlighted in the logs.'),
   challenges: z.array(z.string()).describe('Challenges identified in the logs.'),
   actionableInsights: z.array(z.string()).describe('Actionable insights derived from the logs.'),
-  performanceMetrics: PerformanceMetricsSchema.describe("If the log contains specific performance metrics (like revenue, leads, regional sales), extract them here. Otherwise, leave this field null or undefined."),
+  performanceMetrics: PerformanceMetricsSchema.describe("If the log contains specific performance metrics (like revenue, leads, regional sales), extract them here. If a year is mentioned for these metrics (e.g., '2023 performance'), extract it into the 'year' field. Otherwise, leave this field null or undefined."),
 });
 export type SummarizeSalesDataOutput = z.infer<typeof SummarizeSalesDataOutputSchema>;
 
@@ -57,7 +58,7 @@ const summarizeSalesDataPrompt = ai.definePrompt({
   Analyze the following chat logs from the sales team and provide a summary of the key insights.
   Identify key achievements, challenges, and actionable insights.
 
-  Also, if the chat log contains specific, quantifiable performance metrics (like Total Revenue, New Leads, Conversion Rate, Sales by Region, or Opportunities Pipeline), extract them into the 'performanceMetrics' object. If no such data is present, you can omit the 'performanceMetrics' field.
+  Also, if the chat log contains specific, quantifiable performance metrics (like Total Revenue, New Leads, Conversion Rate, Sales by Region, or Opportunities Pipeline), extract them into the 'performanceMetrics' object. If a year is mentioned for these metrics (e.g., '2023 performance'), extract it into the 'year' field. If no such data is present, you can omit the 'performanceMetrics' field.
 
   Chat Logs:
   {{{chatLogs}}}

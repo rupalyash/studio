@@ -16,9 +16,16 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { DollarSign, TrendingUp, Users } from "lucide-react";
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Data structure from Firestore
 interface PerformanceData {
@@ -80,40 +87,54 @@ const initialData: PerformanceData = {
   ],
 };
 
+const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let year = currentYear; year >= 2020; year--) {
+      years.push(year);
+    }
+    return years;
+};
+
 export function PerformanceDashboard() {
   const [data, setData] = useState<PerformanceData>(initialData);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const yearOptions = generateYearOptions();
 
   useEffect(() => {
     const fetchPerformanceData = async () => {
+      if (!selectedYear) return;
       setIsLoading(true);
       try {
-        const q = query(
-          collection(db, "performance_metrics"),
-          orderBy("createdAt", "desc"),
-          limit(1)
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const latestData = querySnapshot.docs[0].data() as PerformanceData;
-          // Merge fetched data with initial data to ensure all fields are present
-          setData((prevData) => ({ ...prevData, ...latestData }));
+        const docRef = doc(db, "performance_metrics", selectedYear);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const yearData = docSnap.data() as PerformanceData;
+          // Merge with initial data to ensure all fields are present for charts
+          setData(prev => ({...initialData, ...yearData}));
+        } else {
+          // If no data for the year, reset to default
+          setData(initialData);
         }
-        // If empty, it will just use the initialData
       } catch (error) {
         console.error("Error fetching performance data:", error);
-        // In case of error, we still have the initial data
+        setData(initialData);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPerformanceData();
-  }, []);
+  }, [selectedYear]);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
+        <div className="flex justify-end">
+            <Skeleton className="w-[180px] h-10" />
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Skeleton className="h-[120px]" />
           <Skeleton className="h-[120px]" />
@@ -129,6 +150,21 @@ export function PerformanceDashboard() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[180px] bg-card/70 backdrop-blur-sm border-border/20 shadow-xl">
+            <SelectValue placeholder="Select Year" />
+          </SelectTrigger>
+          <SelectContent>
+            {yearOptions.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <motion.div
         className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
         variants={containerVariants}
@@ -146,7 +182,7 @@ export function PerformanceDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">${data.totalRevenue?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
-                Based on the latest data log
+                Data for year {selectedYear}
               </p>
             </CardContent>
           </Card>
@@ -160,7 +196,7 @@ export function PerformanceDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">+{data.newLeads?.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                Based on the latest data log
+                Data for year {selectedYear}
               </p>
             </CardContent>
           </Card>
@@ -176,7 +212,7 @@ export function PerformanceDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{data.conversionRate?.toLocaleString() ?? 0}%</div>
               <p className="text-xs text-muted-foreground">
-                Based on the latest data log
+                Data for year {selectedYear}
               </p>
             </CardContent>
           </Card>
@@ -194,7 +230,7 @@ export function PerformanceDashboard() {
             <CardHeader>
               <CardTitle>Sales by Region</CardTitle>
               <CardDescription>
-                Performance across different geographical regions.
+                Performance across different geographical regions for {selectedYear}.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -224,7 +260,7 @@ export function PerformanceDashboard() {
             <CardHeader>
               <CardTitle>Opportunities Pipeline</CardTitle>
               <CardDescription>
-                Current distribution of sales opportunities by stage.
+                Current distribution of sales opportunities for {selectedYear}.
               </CardDescription>
             </CardHeader>
             <CardContent>

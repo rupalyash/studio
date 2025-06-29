@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { summarizeSalesData } from "@/ai/flows/summarize-sales-data";
 import { db } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, doc, runTransaction, serverTimestamp } from "firebase/firestore";
 
 interface Message {
   id: string;
@@ -63,12 +63,62 @@ export function ChatInterface() {
             createdAt: serverTimestamp(),
         });
 
-        // If performance metrics were extracted, save them to a separate collection
+        // If performance metrics were extracted, aggregate them into the yearly document
         if (performanceMetrics && Object.keys(performanceMetrics).length > 0) {
-            await addDoc(collection(db, "performance_metrics"), {
-                ...performanceMetrics,
-                createdAt: serverTimestamp(),
-            });
+            const year = performanceMetrics.year || new Date().getFullYear();
+            const yearDocRef = doc(db, "performance_metrics", year.toString());
+
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const yearDoc = await transaction.get(yearDocRef);
+                    
+                    if (!yearDoc.exists()) {
+                        // Document doesn't exist, create it with the new data.
+                        const initialData = {
+                            totalRevenue: performanceMetrics.totalRevenue || 0,
+                            newLeads: performanceMetrics.newLeads || 0,
+                            conversionRate: performanceMetrics.conversionRate || 0,
+                            salesByRegion: performanceMetrics.salesByRegion || [],
+                            opportunitiesByStage: performanceMetrics.opportunitiesByStage || [],
+                            updatedAt: serverTimestamp(),
+                        };
+                        transaction.set(yearDocRef, initialData);
+                    } else {
+                        // Document exists, update it
+                        const existingData = yearDoc.data();
+                        const newTotalRevenue = (existingData.totalRevenue || 0) + (performanceMetrics.totalRevenue || 0);
+                        const newLeadsCount = (existingData.newLeads || 0) + (performanceMetrics.newLeads || 0);
+                        
+                        // For conversion rate, we'll just take the latest one.
+                        const newConversionRate = performanceMetrics.conversionRate ?? existingData.conversionRate ?? 0;
+
+                        // Aggregate salesByRegion
+                        const salesRegionMap = new Map(existingData.salesByRegion?.map(item => [item.region, item.sales]) || []);
+                        performanceMetrics.salesByRegion?.forEach(item => {
+                            salesRegionMap.set(item.region, (salesRegionMap.get(item.region) || 0) + item.sales);
+                        });
+                        const newSalesByRegion = Array.from(salesRegionMap, ([region, sales]) => ({ region, sales }));
+
+                        // Aggregate opportunitiesByStage
+                        const oppStageMap = new Map(existingData.opportunitiesByStage?.map(item => [item.stage, item.value]) || []);
+                        performanceMetrics.opportunitiesByStage?.forEach(item => {
+                             oppStageMap.set(item.stage, (oppStageMap.get(item.stage) || 0) + item.value);
+                        });
+                        const newOpportunitiesByStage = Array.from(oppStageMap, ([stage, value]) => ({ stage, value }));
+
+                        transaction.update(yearDocRef, {
+                            totalRevenue: newTotalRevenue,
+                            newLeads: newLeadsCount,
+                            conversionRate: newConversionRate,
+                            salesByRegion: newSalesByRegion,
+                            opportunitiesByStage: newOpportunitiesByStage,
+                            updatedAt: serverTimestamp(),
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error("Transaction failed: ", e);
+            }
         }
         
         const botResponse = (
