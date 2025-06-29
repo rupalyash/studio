@@ -15,22 +15,19 @@ import {
 } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { DollarSign, TrendingUp, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const salesByRegionData = [
-  { region: "NA", sales: 4000 },
-  { region: "EU", sales: 3000 },
-  { region: "APAC", sales: 2000 },
-  { region: "LATAM", sales: 2780 },
-  { region: "MEA", sales: 1890 },
-];
-
-const opportunitiesByStageData = [
-  { stage: "Prospect", value: 120 },
-  { stage: "Qualify", value: 85 },
-  { stage: "Proposal", value: 55 },
-  { stage: "Negotiate", value: 25 },
-  { stage: "Closed", value: 15 },
-];
+// Data structure from Firestore
+interface PerformanceData {
+  totalRevenue?: number;
+  newLeads?: number;
+  conversionRate?: number;
+  salesByRegion?: { region: string; sales: number }[];
+  opportunitiesByStage?: { stage: string; value: number }[];
+}
 
 const chartConfig = {
   sales: {
@@ -66,7 +63,70 @@ const itemVariants = {
   },
 };
 
+// Default data to show if nothing is in Firestore
+const initialData: PerformanceData = {
+  totalRevenue: 0,
+  newLeads: 0,
+  conversionRate: 0,
+  salesByRegion: [
+    { region: "NA", sales: 0 },
+    { region: "EU", sales: 0 },
+    { region: "APAC", sales: 0 },
+  ],
+  opportunitiesByStage: [
+    { stage: "Prospect", value: 0 },
+    { stage: "Qualify", value: 0 },
+    { stage: "Closed", value: 0 },
+  ],
+};
+
 export function PerformanceDashboard() {
+  const [data, setData] = useState<PerformanceData>(initialData);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPerformanceData = async () => {
+      setIsLoading(true);
+      try {
+        const q = query(
+          collection(db, "performance_metrics"),
+          orderBy("createdAt", "desc"),
+          limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const latestData = querySnapshot.docs[0].data() as PerformanceData;
+          // Merge fetched data with initial data to ensure all fields are present
+          setData((prevData) => ({ ...prevData, ...latestData }));
+        }
+        // If empty, it will just use the initialData
+      } catch (error) {
+        console.error("Error fetching performance data:", error);
+        // In case of error, we still have the initial data
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPerformanceData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-[120px]" />
+          <Skeleton className="h-[120px]" />
+          <Skeleton className="h-[120px]" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+          <Skeleton className="h-[350px]" />
+          <Skeleton className="h-[350px]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <motion.div
@@ -84,9 +144,9 @@ export function PerformanceDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$45,231.89</div>
+              <div className="text-2xl font-bold">${data.totalRevenue?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               <p className="text-xs text-muted-foreground">
-                +20.1% from last month
+                Based on the latest data log
               </p>
             </CardContent>
           </Card>
@@ -98,9 +158,9 @@ export function PerformanceDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+2350</div>
+              <div className="text-2xl font-bold">+{data.newLeads?.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                +180.1% from last month
+                Based on the latest data log
               </p>
             </CardContent>
           </Card>
@@ -114,9 +174,9 @@ export function PerformanceDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+12.2%</div>
+              <div className="text-2xl font-bold">{data.conversionRate?.toLocaleString() ?? 0}%</div>
               <p className="text-xs text-muted-foreground">
-                +2.1% from last month
+                Based on the latest data log
               </p>
             </CardContent>
           </Card>
@@ -141,7 +201,7 @@ export function PerformanceDashboard() {
               <ChartContainer config={chartConfig} className="h-[250px] w-full">
                 <BarChart
                   accessibilityLayer
-                  data={salesByRegionData}
+                  data={data.salesByRegion}
                   margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
                 >
                   <CartesianGrid vertical={false} />
@@ -171,7 +231,7 @@ export function PerformanceDashboard() {
               <ChartContainer config={chartConfig} className="h-[250px] w-full">
                 <BarChart
                   accessibilityLayer
-                  data={opportunitiesByStageData}
+                  data={data.opportunitiesByStage}
                   layout="vertical"
                   margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
                 >

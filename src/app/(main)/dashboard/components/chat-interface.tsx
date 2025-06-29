@@ -32,7 +32,7 @@ export function ChatInterface() {
       id: "initial-message",
       role: "bot",
       content:
-        "Hello! Log your sales updates here: meeting notes, client feedback, new opportunities, etc.",
+        "Hello! Log your sales updates here: meeting notes, client feedback, new opportunities, performance metrics etc.",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -54,11 +54,22 @@ export function ChatInterface() {
       try {
         const result = await summarizeSalesData({ chatLogs: inputValue });
         
+        const { performanceMetrics, ...salesUpdateData } = result;
+
+        // Save the general update
         await addDoc(collection(db, "sales_updates"), {
-            ...result,
+            ...salesUpdateData,
             rawText: inputValue,
             createdAt: serverTimestamp(),
         });
+
+        // If performance metrics were extracted, save them to a separate collection
+        if (performanceMetrics && Object.keys(performanceMetrics).length > 0) {
+            await addDoc(collection(db, "performance_metrics"), {
+                ...performanceMetrics,
+                createdAt: serverTimestamp(),
+            });
+        }
         
         const botResponse = (
             <div className="space-y-2">
@@ -78,6 +89,11 @@ export function ChatInterface() {
                         <ul className="list-disc list-inside">
                             {result.challenges.map((item, i) => <li key={i}>{item}</li>)}
                         </ul>
+                    </div>
+                )}
+                {performanceMetrics && (
+                    <div className="mt-2 text-xs italic text-muted-foreground/80">
+                        Performance metrics were detected and saved to the dashboard.
                     </div>
                 )}
             </div>
