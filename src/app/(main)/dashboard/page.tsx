@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PerformanceDashboard } from './components/performance-dashboard';
 import { useAuth } from '@/app/auth-provider';
 import { WeeklyReport } from './components/weekly-report';
-import { SalesInsights } from './components/sales-insights';
 
 function PerformanceDashboardSkeleton() {
     return (
@@ -44,9 +43,8 @@ export default function DashboardPage() {
       <div className="pt-6 space-y-4">
         <h3 className="text-2xl font-bold tracking-tight">AI Reports</h3>
         <p className="text-muted-foreground">Automated summaries and analyses of your sales data.</p>
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
             <WeeklyReport />
-            <SalesInsights />
         </div>
       </div>
     </div>
