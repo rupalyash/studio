@@ -112,7 +112,7 @@ export function WeeklyReport() {
     <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Automated Weekly Summary</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-foreground">
           A weekly summary report for leadership based on sales activities logged in the last 7 days.
         </CardDescription>
       </CardHeader>
@@ -140,7 +140,7 @@ export function WeeklyReport() {
                 {report.keyAchievements.length > 0 && (
                     <div className="space-y-2">
                         <h4 className="font-semibold text-foreground">Key Achievements</h4>
-                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                        <ul className="list-disc list-inside space-y-1 text-foreground text-sm">
                             {report.keyAchievements.map((item, i) => <li key={`ach-${i}`}>{item}</li>)}
                         </ul>
                     </div>
@@ -149,7 +149,7 @@ export function WeeklyReport() {
                 {report.challenges.length > 0 && (
                     <div className="space-y-2">
                         <h4 className="font-semibold text-foreground">Challenges</h4>
-                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                        <ul className="list-disc list-inside space-y-1 text-foreground text-sm">
                             {report.challenges.map((item, i) => <li key={`chal-${i}`}>{item}</li>)}
                         </ul>
                     </div>
@@ -158,7 +158,7 @@ export function WeeklyReport() {
                 {report.actionableInsights.length > 0 && (
                      <div className="space-y-2">
                         <h4 className="font-semibold text-foreground">Actionable Insights</h4>
-                        <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                        <ul className="list-disc list-inside space-y-1 text-foreground text-sm">
                             {report.actionableInsights.map((item, i) => <li key={`ins-${i}`}>{item}</li>)}
                         </ul>
                     </div>

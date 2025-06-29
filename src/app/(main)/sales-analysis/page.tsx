@@ -35,7 +35,7 @@ function InsightCategoryContent({ category }: { category: { summary: string; det
         <div className="space-y-4">
             <div>
                 <h4 className="font-semibold text-sm">Summary</h4>
-                <p className="text-sm text-muted-foreground mt-1">{category.summary}</p>
+                <p className="text-sm text-foreground mt-1">{category.summary}</p>
             </div>
             {category.details.length > 0 && (
                  <div>
@@ -43,7 +43,7 @@ function InsightCategoryContent({ category }: { category: { summary: string; det
                         <AccordionItem value="item-1">
                             <AccordionTrigger className="text-sm font-semibold">View Detailed Points ({category.details.length})</AccordionTrigger>
                             <AccordionContent>
-                                <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+                                <ul className="list-disc space-y-2 pl-5 text-sm text-foreground">
                                     {category.details.map((detail, i) => <li key={i}>{detail}</li>)}
                                 </ul>
                             </AccordionContent>
@@ -180,7 +180,7 @@ function SalesAnalysisCard() {
     <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>AI-Powered Analysis</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-foreground">
           AI analysis of up to 100 recent sales updates from the database, categorized into actionable insights.
         </CardDescription>
       </CardHeader>
@@ -205,7 +205,7 @@ function SalesAnalysisCard() {
             <div className="space-y-6">
                 <div>
                     <h3 className="text-lg font-semibold tracking-tight">Overall Summary</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{insights.overallSummary}</p>
+                    <p className="mt-1 text-sm text-foreground">{insights.overallSummary}</p>
                 </div>
                 <Separator />
                 <div>

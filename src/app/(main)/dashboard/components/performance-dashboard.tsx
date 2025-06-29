@@ -181,7 +181,7 @@ export function PerformanceDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${data.totalRevenue?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground">
                 Data for year {selectedYear}
               </p>
             </CardContent>
@@ -195,7 +195,7 @@ export function PerformanceDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">+{data.newLeads?.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground">
                 Data for year {selectedYear}
               </p>
             </CardContent>
@@ -211,7 +211,7 @@ export function PerformanceDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{data.conversionRate?.toLocaleString() ?? 0}%</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-foreground">
                 Data for year {selectedYear}
               </p>
             </CardContent>
@@ -229,7 +229,7 @@ export function PerformanceDashboard() {
           <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
             <CardHeader>
               <CardTitle>Sales by Region</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-foreground">
                 Performance across different geographical regions for {selectedYear}.
               </CardDescription>
             </CardHeader>
@@ -259,7 +259,7 @@ export function PerformanceDashboard() {
           <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
             <CardHeader>
               <CardTitle>Opportunities Pipeline</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-foreground">
                 Current distribution of sales opportunities for {selectedYear}.
               </CardDescription>
             </CardHeader>

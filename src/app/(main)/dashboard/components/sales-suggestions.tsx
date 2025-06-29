@@ -78,7 +78,7 @@ export function SalesSuggestions() {
     <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Strategic AI Suggestions</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-foreground">
           AI-powered recommendations based on your historical sales and performance data.
         </CardDescription>
       </CardHeader>
@@ -144,7 +144,7 @@ function SuggestionSection({ title, items }: SuggestionSectionProps) {
             <h4 className="flex items-center gap-2 text-md font-semibold text-foreground">
                 {title}
             </h4>
-            <ul className="list-disc list-outside space-y-2 pl-8 text-sm text-muted-foreground">
+            <ul className="list-disc list-outside space-y-2 pl-8 text-sm text-foreground">
                 {items.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
         </div>
