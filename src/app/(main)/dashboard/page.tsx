@@ -40,12 +40,8 @@ export default function DashboardPage() {
          </Suspense>
       </div>
 
-      <div className="pt-6 space-y-4">
-        <h3 className="text-2xl font-bold tracking-tight">AI Reports</h3>
-        <p className="text-muted-foreground">Automated summaries and analyses of your sales data.</p>
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
-            <WeeklyReport />
-        </div>
+      <div className="pt-6">
+        <WeeklyReport />
       </div>
     </div>
   );
