@@ -35,8 +35,8 @@ export function SalesSuggestions() {
           rawText: doc.data().rawText || "",
         }));
 
-        // Fetch performance metrics
-        const performanceMetricsQuery = query(collection(db, "performance_metrics"), orderBy("__name__", "desc"));
+        // Fetch performance metrics - removed orderBy to avoid needing a composite index
+        const performanceMetricsQuery = query(collection(db, "performance_metrics"));
         const performanceMetricsSnapshot = await getDocs(performanceMetricsQuery);
         const performanceMetrics = performanceMetricsSnapshot.docs.map(doc => {
             const data = doc.data();
@@ -47,7 +47,7 @@ export function SalesSuggestions() {
                 conversionRate: data.conversionRate,
                 salesByRegion: data.salesByRegion,
             };
-        });
+        }).sort((a, b) => b.year - a.year); // Sort on the client side
 
         if (salesUpdates.length === 0 && performanceMetrics.length === 0) {
           setError("No data found in the database to generate suggestions.");
