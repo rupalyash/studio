@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, TrendingUp, MessageSquareQuote, MapPinned } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -104,21 +104,18 @@ export function SalesSuggestions() {
             {suggestions.salesIncreaseSuggestions.length > 0 && (
                 <SuggestionSection
                     title="How to Increase Sales"
-                    icon={<TrendingUp className="h-5 w-5 text-green-500" />}
                     items={suggestions.salesIncreaseSuggestions}
                 />
             )}
             {suggestions.clientFeedbackSuggestions.length > 0 && (
                 <SuggestionSection
                     title="Based on Client Feedback"
-                    icon={<MessageSquareQuote className="h-5 w-5 text-blue-500" />}
                     items={suggestions.clientFeedbackSuggestions}
                 />
             )}
             {suggestions.regionsToWatch.length > 0 && (
                 <SuggestionSection
                     title="Regions to Watch"
-                    icon={<MapPinned className="h-5 w-5 text-orange-500" />}
                     items={suggestions.regionsToWatch}
                 />
             )}
@@ -138,15 +135,13 @@ export function SalesSuggestions() {
 
 interface SuggestionSectionProps {
     title: string;
-    icon: React.ReactNode;
     items: string[];
 }
 
-function SuggestionSection({ title, icon, items }: SuggestionSectionProps) {
+function SuggestionSection({ title, items }: SuggestionSectionProps) {
     return (
         <div className="space-y-3">
             <h4 className="flex items-center gap-2 text-md font-semibold text-foreground">
-                {icon}
                 {title}
             </h4>
             <ul className="list-disc list-outside space-y-2 pl-8 text-sm text-muted-foreground">
