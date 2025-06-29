@@ -32,7 +32,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-3xl font-bold tracking-tight">Hi, {firstName}!</h3>
-        <p className="text-muted-foreground">Welcome back! Here's your sales performance at a glance.</p>
+        <p className="text-foreground">Welcome back! Here's your sales performance at a glance.</p>
       </div>
       
       <div className="pt-6 space-y-4">
