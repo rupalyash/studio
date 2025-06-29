@@ -173,7 +173,7 @@ export function WeeklyReport() {
       </CardContent>
       <CardFooter>
         {report && !isLoading && (
-            <Button onClick={handleDownloadPdf}>
+            <Button onClick={handleDownloadPdf} className="bg-foreground text-background hover:bg-foreground/90">
                 <Download className="mr-2 h-4 w-4" />
                 Download PDF
             </Button>
