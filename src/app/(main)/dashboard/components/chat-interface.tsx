@@ -78,42 +78,59 @@ export function ChatInterface() {
                             totalRevenue: performanceMetrics.totalRevenue || 0,
                             newLeads: performanceMetrics.newLeads || 0,
                             conversionRate: performanceMetrics.conversionRate || 0,
-                            salesByRegion: performanceMetrics.salesByRegion || [],
-                            opportunitiesByStage: performanceMetrics.opportunitiesByStage || [],
+                            salesByRegion: performanceMetrics.salesByRegion?.map(({region, sales}) => ({region, sales})) || [],
+                            opportunitiesByStage: performanceMetrics.opportunitiesByStage?.map(({stage, value}) => ({stage, value})) || [],
                             updatedAt: serverTimestamp(),
                         };
                         transaction.set(yearDocRef, initialData);
                     } else {
                         // Document exists, update it
                         const existingData = yearDoc.data();
-                        const newTotalRevenue = (existingData.totalRevenue || 0) + (performanceMetrics.totalRevenue || 0);
-                        const newLeadsCount = (existingData.newLeads || 0) + (performanceMetrics.newLeads || 0);
+                        const updates: any = {};
+
+                        // Aggregate additive metrics
+                        if (performanceMetrics.totalRevenue) {
+                            updates.totalRevenue = (existingData.totalRevenue || 0) + (performanceMetrics.totalRevenue || 0);
+                        }
+                        if (performanceMetrics.newLeads) {
+                            updates.newLeads = (existingData.newLeads || 0) + (performanceMetrics.newLeads || 0);
+                        }
                         
-                        // For conversion rate, we'll just take the latest one.
-                        const newConversionRate = performanceMetrics.conversionRate ?? existingData.conversionRate ?? 0;
+                        // Take the latest value for conversion rate
+                        if (performanceMetrics.conversionRate !== undefined) {
+                            updates.conversionRate = performanceMetrics.conversionRate;
+                        }
 
-                        // Aggregate salesByRegion
-                        const salesRegionMap = new Map(existingData.salesByRegion?.map(item => [item.region, item.sales]) || []);
-                        performanceMetrics.salesByRegion?.forEach(item => {
-                            salesRegionMap.set(item.region, (salesRegionMap.get(item.region) || 0) + item.sales);
-                        });
-                        const newSalesByRegion = Array.from(salesRegionMap, ([region, sales]) => ({ region, sales }));
+                        // For salesByRegion, merge/update based on updateType
+                        if (performanceMetrics.salesByRegion && performanceMetrics.salesByRegion.length > 0) {
+                            const salesRegionMap = new Map(existingData.salesByRegion?.map((item: any) => [item.region, item.sales]) || []);
+                            performanceMetrics.salesByRegion.forEach(item => {
+                                if (item.updateType === 'set') {
+                                    salesRegionMap.set(item.region, item.sales);
+                                } else { // 'increment' or default to increment
+                                    salesRegionMap.set(item.region, (salesRegionMap.get(item.region) || 0) + item.sales);
+                                }
+                            });
+                            updates.salesByRegion = Array.from(salesRegionMap, ([region, sales]) => ({ region, sales }));
+                        }
 
-                        // Aggregate opportunitiesByStage
-                        const oppStageMap = new Map(existingData.opportunitiesByStage?.map(item => [item.stage, item.value]) || []);
-                        performanceMetrics.opportunitiesByStage?.forEach(item => {
-                             oppStageMap.set(item.stage, (oppStageMap.get(item.stage) || 0) + item.value);
-                        });
-                        const newOpportunitiesByStage = Array.from(oppStageMap, ([stage, value]) => ({ stage, value }));
-
-                        transaction.update(yearDocRef, {
-                            totalRevenue: newTotalRevenue,
-                            newLeads: newLeadsCount,
-                            conversionRate: newConversionRate,
-                            salesByRegion: newSalesByRegion,
-                            opportunitiesByStage: newOpportunitiesByStage,
-                            updatedAt: serverTimestamp(),
-                        });
+                        // For opportunitiesByStage, also merge/update based on updateType
+                        if (performanceMetrics.opportunitiesByStage && performanceMetrics.opportunitiesByStage.length > 0) {
+                            const oppStageMap = new Map(existingData.opportunitiesByStage?.map((item: any) => [item.stage, item.value]) || []);
+                            performanceMetrics.opportunitiesByStage.forEach(item => {
+                                if (item.updateType === 'set') {
+                                    oppStageMap.set(item.stage, item.value);
+                                } else { // 'increment'
+                                    oppStageMap.set(item.stage, (oppStageMap.get(item.stage) || 0) + item.value);
+                                }
+                            });
+                            updates.opportunitiesByStage = Array.from(oppStageMap, ([stage, value]) => ({ stage, value }));
+                        }
+                        
+                        if (Object.keys(updates).length > 0) {
+                            updates.updatedAt = serverTimestamp();
+                            transaction.update(yearDocRef, updates);
+                        }
                     }
                 });
             } catch (e) {
