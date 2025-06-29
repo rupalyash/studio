@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,45 +12,92 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Bot, Send, User, Upload, File as FileIcon, X } from "lucide-react";
+import { Bot, Send, User, Upload, File as FileIcon, X, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { summarizeSalesData } from "@/ai/flows/summarize-sales-data";
+import { db } from "@/lib/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 interface Message {
+  id: string;
   role: "user" | "bot";
-  content: string;
+  content: ReactNode;
 }
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: "initial-message",
       role: "bot",
       content:
         "Hello! Log your sales updates here: meeting notes, client feedback, new opportunities, etc.",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim()) {
-      const userMessage: Message = { role: "user", content: inputValue };
-      const botResponse: Message = {
-        role: "bot",
-        content: "Update logged. Thanks for the input!",
-      };
-      setMessages((prev) => [...prev, userMessage, botResponse]);
+  const handleSendMessage = async () => {
+    if (inputValue.trim() && !isProcessing) {
+      setIsProcessing(true);
+      const userMessage: Message = { id: `user-${Date.now()}`, role: "user", content: inputValue };
+      setMessages((prev) => [...prev, userMessage]);
       setInputValue("");
+      
+      const botMessageId = `bot-${Date.now()}`;
+      setMessages((prev) => [...prev, {id: botMessageId, role: 'bot', content: <Loader2 className="h-5 w-5 animate-spin" />}]);
+
+      try {
+        const result = await summarizeSalesData({ chatLogs: inputValue });
+        
+        await addDoc(collection(db, "sales_updates"), {
+            ...result,
+            rawText: inputValue,
+            createdAt: serverTimestamp(),
+        });
+        
+        const botResponse = (
+            <div className="space-y-2">
+                <p className="font-bold">Update Logged & Analyzed:</p>
+                <p>{result.summary}</p>
+                {result.keyAchievements.length > 0 && (
+                    <div>
+                        <p className="font-semibold">Key Achievements:</p>
+                        <ul className="list-disc list-inside">
+                            {result.keyAchievements.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+                {result.challenges.length > 0 && (
+                    <div>
+                        <p className="font-semibold">Challenges:</p>
+                        <ul className="list-disc list-inside">
+                            {result.challenges.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        );
+        setMessages((prev) => prev.map(msg => msg.id === botMessageId ? {...msg, content: botResponse} : msg));
+
+      } catch (error) {
+          console.error("Failed to process sales data:", error);
+          const errorResponse = "Sorry, I couldn't process that update. Please try again.";
+          setMessages((prev) => prev.map(msg => msg.id === botMessageId ? {...msg, content: errorResponse} : msg));
+      } finally {
+        setIsProcessing(false);
+      }
     }
   };
   
   const handleLogFile = () => {
     if (uploadedFile) {
-        const userMessage: Message = { role: 'user', content: `Uploaded file: ${uploadedFile.name}`};
-        const botResponse: Message = { role: 'bot', content: 'File logged successfully. Thank you!'};
+        const userMessage: Message = { id: `user-file-${Date.now()}`, role: 'user', content: `Uploaded file: ${uploadedFile.name}`};
+        const botResponse: Message = { id: `bot-file-${Date.now()}`, role: 'bot', content: 'File logged successfully. Thank you!'};
         setMessages((prev) => [...prev, userMessage, botResponse]);
         setUploadedFile(null);
     }
@@ -86,15 +133,15 @@ export function ChatInterface() {
       <CardHeader>
         <CardTitle>Internal Sales Reporter</CardTitle>
         <CardDescription>
-          Use this chat to log your sales activities.
+          Use this chat to log your sales activities. AI will analyze and store them.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
         <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
-                key={index}
+                key={message.id}
                 className={cn(
                   "flex items-start gap-3",
                   message.role === "user" ? "justify-end" : "justify-start"
@@ -109,13 +156,13 @@ export function ChatInterface() {
                 )}
                 <div
                   className={cn(
-                    "max-w-xs rounded-lg p-3 text-sm md:max-w-md",
+                    "max-w-xs rounded-lg p-3 text-sm md:max-w-md prose prose-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
                   )}
                 >
-                  <p>{message.content}</p>
+                  {message.content}
                 </div>
                 {message.role === "user" && (
                   <Avatar className="h-8 w-8">
@@ -143,9 +190,10 @@ export function ChatInterface() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyPress}
+                disabled={isProcessing}
               />
-              <Button type="submit" onClick={handleSendMessage}>
-                <Send className="h-4 w-4" />
+              <Button type="submit" onClick={handleSendMessage} disabled={isProcessing}>
+                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 <span className="sr-only">Send</span>
               </Button>
             </div>
