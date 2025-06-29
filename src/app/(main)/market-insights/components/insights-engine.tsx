@@ -82,10 +82,10 @@ export function InsightsEngine() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-1">
-        <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+        <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
           <CardHeader>
             <CardTitle>Market Insights Engine</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-foreground">
               Select an industry to automatically see the latest trends.
             </CardDescription>
           </CardHeader>
@@ -125,10 +125,10 @@ export function InsightsEngine() {
         </Card>
       </div>
       <div className="lg:col-span-2">
-        <Card className="min-h-[400px] bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+        <Card className="min-h-[400px] bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
           <CardHeader>
             <CardTitle>Analysis for: <span className="text-primary">{selectedIndustry}</span></CardTitle>
-            <CardDescription>
+            <CardDescription className="text-foreground">
               AI-generated summary based on the latest news.
             </CardDescription>
           </CardHeader>
@@ -153,7 +153,7 @@ export function InsightsEngine() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">Summary</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-foreground">
                     {result.summary}
                   </p>
                 </div>

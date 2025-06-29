@@ -152,7 +152,7 @@ export function PerformanceDashboard() {
     <div className="space-y-4">
       <div className="flex justify-end">
         <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[180px] bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <SelectTrigger className="w-[180px] bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <SelectValue placeholder="Select Year" />
           </SelectTrigger>
           <SelectContent>
@@ -172,7 +172,7 @@ export function PerformanceDashboard() {
         animate="show"
       >
         <motion.div variants={itemVariants}>
-          <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Total Revenue
@@ -188,7 +188,7 @@ export function PerformanceDashboard() {
           </Card>
         </motion.div>
         <motion.div variants={itemVariants}>
-          <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">New Leads</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -202,7 +202,7 @@ export function PerformanceDashboard() {
           </Card>
         </motion.div>
         <motion.div variants={itemVariants}>
-          <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Conversion Rate
@@ -226,7 +226,7 @@ export function PerformanceDashboard() {
         animate="show"
       >
         <motion.div variants={itemVariants}>
-          <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <CardHeader>
               <CardTitle>Sales by Region</CardTitle>
               <CardDescription className="text-foreground">
@@ -256,7 +256,7 @@ export function PerformanceDashboard() {
           </Card>
         </motion.div>
         <motion.div variants={itemVariants}>
-          <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+          <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
             <CardHeader>
               <CardTitle>Opportunities Pipeline</CardTitle>
               <CardDescription className="text-foreground">

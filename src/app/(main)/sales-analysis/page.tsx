@@ -177,7 +177,7 @@ function SalesAnalysisCard() {
   };
 
   return (
-    <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
+    <Card className="bg-card/50 backdrop-blur-md border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>AI-Powered Analysis</CardTitle>
         <CardDescription className="text-foreground">

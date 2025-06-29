@@ -74,8 +74,8 @@ export default function SignUpPage() {
       className="relative w-full min-h-screen flex items-center justify-center p-6 bg-auth-gradient animate-gradient-bg" 
       style={{backgroundSize: '400% 400%'}}
     >
-      <div className="absolute inset-0 z-0 bg-black/20 backdrop-blur-sm"></div>
-      <Card className="relative z-10 mx-auto w-full max-w-md bg-card/60 backdrop-blur-sm border border-border/20 shadow-2xl">
+      <div className="absolute inset-0 z-0 bg-black/30 backdrop-blur-md"></div>
+      <Card className="relative z-10 mx-auto w-full max-w-md bg-card/50 backdrop-blur-md border border-border/20 shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <AnimatePresence>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
