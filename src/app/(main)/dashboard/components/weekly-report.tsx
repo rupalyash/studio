@@ -109,7 +109,7 @@ export function WeeklyReport() {
   };
 
   return (
-    <Card className="bg-card/70 backdrop-blur-sm border-border/20 shadow-xl">
+    <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-xl">
       <CardHeader>
         <CardTitle>Automated Weekly Summary</CardTitle>
         <CardDescription>

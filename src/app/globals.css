@@ -23,7 +23,7 @@
     --border: 216 28% 88%;
     --input: 216 28% 88%;
     --ring: 205 90% 45%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     --chart-1: 205 90% 45%;
     --chart-2: 180 100% 30%;
     --chart-3: 216 28% 70%;
@@ -37,6 +37,8 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 224 71% 10%;
     --sidebar-ring: 205 90% 45%;
+    --purple: 270 90% 65%;
+    --violet: 290 90% 65%;
   }
 
   .dark {
@@ -59,6 +61,7 @@
     --border: 216 28% 10%;
     --input: 216 28% 10%;
     --ring: 205 90% 45%;
+    --radius: 0.75rem;
     --chart-1: 205 90% 45%;
     --chart-2: 180 100% 30%;
     --chart-3: 216 28% 70%;
@@ -72,6 +75,8 @@
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 216 28% 10%;
     --sidebar-ring: 205 90% 45%;
+    --purple: 270 90% 65%;
+    --violet: 290 90% 65%;
   }
 }
 

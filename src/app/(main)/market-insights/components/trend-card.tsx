@@ -7,7 +7,7 @@ interface TrendCardProps {
 
 export function TrendCard({ trend }: TrendCardProps) {
   return (
-    <Card className="bg-card/70 backdrop-blur-sm border-border/20 shadow-lg">
+    <Card className="bg-card/60 backdrop-blur-sm border-border/20 shadow-lg">
       <CardContent className="p-4 flex items-start gap-4">
         <div className="bg-accent/20 text-accent rounded-full p-2">
             <Lightbulb className="h-5 w-5" />

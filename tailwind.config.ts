@@ -15,7 +15,7 @@ const config: Config = {
         code: ['monospace'],
       },
       backgroundImage: {
-        'auth-gradient': 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 50%, hsl(var(--background)) 100%)',
+        'auth-gradient': 'linear-gradient(135deg, hsl(var(--purple)) 0%, hsl(var(--violet)) 100%)',
       },
       colors: {
         background: 'hsl(var(--background))',
