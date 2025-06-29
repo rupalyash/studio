@@ -12,10 +12,10 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const PerformanceMetricSchema = z.object({
-    year: z.number().optional(),
-    totalRevenue: z.number().optional(),
-    newLeads: z.number().optional(),
-    conversionRate: z.number().optional(),
+    year: z.number().optional().nullable(),
+    totalRevenue: z.number().optional().nullable(),
+    newLeads: z.number().optional().nullable(),
+    conversionRate: z.number().optional().nullable(),
     salesByRegion: z.array(z.object({
         region: z.string(),
         sales: z.number(),
@@ -62,13 +62,15 @@ Analyze all of this data holistically and provide the following insights in the 
 **Performance Metrics Data:**
 {{#each performanceMetrics}}
 Year: {{this.year}}
-- Total Revenue: {{this.totalRevenue}}
-- New Leads: {{this.newLeads}}
-- Conversion Rate: {{this.conversionRate}}%
+{{#if this.totalRevenue}}- Total Revenue: {{this.totalRevenue}}{{/if}}
+{{#if this.newLeads}}- New Leads: {{this.newLeads}}{{/if}}
+{{#if this.conversionRate}}- Conversion Rate: {{this.conversionRate}}%{{/if}}
+{{#if this.salesByRegion}}
 - Sales by Region:
   {{#each this.salesByRegion}}
   - {{this.region}}: {{this.sales}}
   {{/each}}
+{{/if}}
 {{/each}}
 
 **Raw Sales Updates (contains client feedback):**
