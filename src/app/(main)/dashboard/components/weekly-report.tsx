@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import jsPDF from "jspdf";
 import {
   Card,
@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Sparkles } from "lucide-react";
 import { generateWeeklyReport, GenerateWeeklyReportOutput } from "@/ai/flows/generate-weekly-report";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, Timestamp, orderBy, limit } from "firebase/firestore";
@@ -20,47 +20,46 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function WeeklyReport() {
   const [report, setReport] = useState<GenerateWeeklyReportOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const generateReport = async () => {
-      try {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgo);
-  
-        const q = query(
-          collection(db, "sales_updates"),
-          where("createdAt", ">=", sevenDaysAgoTimestamp),
-          orderBy("createdAt", "desc"),
-          limit(50)
-        );
-  
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-          setError("No sales updates found in the last 7 days to generate a report.");
-          setIsLoading(false);
-          return;
-        }
-  
-        const salesData = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return `Update from ${data.createdAt.toDate().toLocaleDateString()}:\n${data.rawText}`;
-        }).join("\n\n---\n\n");
-  
-        const result = await generateWeeklyReport({ salesData });
-        setReport(result);
-      } catch (error) {
-        console.error("Failed to generate report:", error);
-        setError("There was an error generating the report. Please try again.");
-      } finally {
+  const handleGenerateReport = async () => {
+    setIsLoading(true);
+    setError(null);
+    setReport(null);
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const sevenDaysAgoTimestamp = Timestamp.fromDate(sevenDaysAgo);
+
+      const q = query(
+        collection(db, "sales_updates"),
+        where("createdAt", ">=", sevenDaysAgoTimestamp),
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        setError("No sales updates found in the last 7 days to generate a report.");
         setIsLoading(false);
+        return;
       }
-    };
-    
-    generateReport();
-  }, [])
+
+      const salesData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return `Update from ${data.createdAt.toDate().toLocaleDateString()}:\n${data.rawText}`;
+      }).join("\n\n---\n\n");
+
+      const result = await generateWeeklyReport({ salesData });
+      setReport(result);
+    } catch (error) {
+      console.error("Failed to generate report:", error);
+      setError("Failed to generate the report. You may have exceeded your API quota. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDownloadPdf = () => {
     if (!report) return;
@@ -163,11 +162,16 @@ export function WeeklyReport() {
                 )}
             </div>
         )}
-         {!isLoading && !report && !error && (
-          <div className="flex items-center justify-center rounded-md border border-dashed p-10">
-            <p className="text-center text-muted-foreground">
-              No recent sales data to generate a report.
+        {!isLoading && !report && !error && (
+          <div className="flex flex-col items-center justify-center rounded-md border border-dashed p-10 text-center">
+            <h3 className="text-lg font-medium">Generate Your Report</h3>
+            <p className="text-sm text-muted-foreground mt-2 mb-4">
+              Click the button below to have AI analyze the last 7 days of sales data and create a summary.
             </p>
+            <Button onClick={handleGenerateReport} disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isLoading ? "Analyzing..." : "Generate Report"}
+            </Button>
           </div>
         )}
       </CardContent>
