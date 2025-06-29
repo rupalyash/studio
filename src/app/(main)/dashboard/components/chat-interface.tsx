@@ -414,8 +414,11 @@ export function ChatInterface() {
                             <X className="w-4 h-4" />
                         </Button>
                     </div>
-                    <Button onClick={handleLogFile} className="w-full" disabled={isProcessing}>
-                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Log File"}
+                    <Button onClick={handleLogFile} className="w-full" variant="secondary" disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : (<>
+                          <FileIcon />
+                          Log File
+                        </>)}
                     </Button>
                 </div>
             )}
