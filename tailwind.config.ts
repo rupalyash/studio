@@ -14,6 +14,9 @@ const config: Config = {
         headline: ['var(--font-inter)', 'sans-serif'],
         code: ['monospace'],
       },
+      backgroundImage: {
+        'auth-gradient': 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-2)) 50%, hsl(var(--background)) 100%)',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -88,10 +91,19 @@ const config: Config = {
             height: '0',
           },
         },
+        'gradient-bg': {
+          '0%, 100%': {
+            backgroundPosition: '0% 50%',
+          },
+          '50%': {
+            backgroundPosition: '100% 50%',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'gradient-bg': 'gradient-bg 15s ease infinite',
       },
     },
   },
