@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -26,6 +26,7 @@ const SplitText = ({ children, ...rest }: { children: string; [key: string]: any
 };
 
 export default function SignUpPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -34,7 +35,7 @@ export default function SignUpPage() {
   const router = useRouter();
 
   const handleSignUp = async () => {
-    if (!email || !password || !confirmPassword) {
+    if (!name || !email || !password || !confirmPassword) {
       toast({
         variant: "destructive",
         title: "Missing fields",
@@ -52,7 +53,10 @@ export default function SignUpPage() {
     }
     setIsLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, {
+        displayName: name,
+      });
       router.push("/dashboard");
     } catch (error: any) {
       toast({
@@ -101,6 +105,19 @@ export default function SignUpPage() {
           <CardContent>
             <div className="grid gap-6 mt-4">
               <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="John Doe"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={isLoading}
+                  className="h-11 text-base bg-background/50"
+                />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -137,7 +154,12 @@ export default function SignUpPage() {
                   className="h-11 text-base bg-background/50" 
                 />
               </div>
-              <Button type="submit" className="w-full h-11 text-base font-semibold" onClick={handleSignUp} disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full h-11 text-base font-semibold bg-foreground text-background hover:bg-foreground/90" 
+                onClick={handleSignUp} 
+                disabled={isLoading}
+              >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isLoading ? "Creating Account..." : "Sign Up"}
               </Button>

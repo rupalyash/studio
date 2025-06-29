@@ -47,7 +47,7 @@ function AppHeader() {
       <div className="flex items-center gap-4">
         <Avatar>
           <AvatarImage src={user?.photoURL ?? "https://placehold.co/32x32"} alt={user?.displayName ?? "User"} data-ai-hint="profile avatar" />
-          <AvatarFallback>{user?.email?.charAt(0).toUpperCase() ?? 'SR'}</AvatarFallback>
+          <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? 'U'}</AvatarFallback>
         </Avatar>
       </div>
     </header>
