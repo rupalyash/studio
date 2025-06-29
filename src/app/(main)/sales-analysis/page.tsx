@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download } from "lucide-react";
+import { Loader2, Download, NotebookPen, MessageSquareQuote, Lightbulb } from "lucide-react";
 import {
   collection,
   query,
@@ -211,10 +211,19 @@ function SalesAnalysisCard() {
                 <div>
                     <h3 className="text-lg font-semibold tracking-tight">Detailed Breakdown</h3>
                     <Tabs defaultValue="meeting-notes" className="mt-2 w-full">
-                        <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="meeting-notes">Meeting Notes</TabsTrigger>
-                            <TabsTrigger value="client-feedback">Client Feedback</TabsTrigger>
-                            <TabsTrigger value="new-opportunities">New Opportunities</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-3 bg-muted/50 border">
+                            <TabsTrigger value="meeting-notes">
+                                <NotebookPen className="mr-2 h-4 w-4" />
+                                Meeting Notes
+                            </TabsTrigger>
+                            <TabsTrigger value="client-feedback">
+                                <MessageSquareQuote className="mr-2 h-4 w-4" />
+                                Client Feedback
+                            </TabsTrigger>
+                            <TabsTrigger value="new-opportunities">
+                                <Lightbulb className="mr-2 h-4 w-4" />
+                                New Opportunities
+                            </TabsTrigger>
                         </TabsList>
                         
                         <div className="mt-4">
