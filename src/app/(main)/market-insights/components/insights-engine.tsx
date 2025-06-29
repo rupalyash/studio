@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Sparkles } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { summarizeMarketInsights } from "@/ai/flows/summarize-market-insights";
 import { TrendCard } from "./trend-card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,26 +34,34 @@ export function InsightsEngine() {
   const [selectedIndustry, setSelectedIndustry] = useState<string>(initialIndustries[0]);
   const [newIndustry, setNewIndustry] = useState("");
   const [result, setResult] = useState<SummaryResult | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAnalyze = async () => {
-    if (!selectedIndustry.trim()) return;
-    
-    setIsLoading(true);
-    setResult(null);
-    setError(null);
+  useEffect(() => {
+    const analyze = async () => {
+      if (!selectedIndustry.trim()) {
+        setIsLoading(false);
+        setResult(null);
+        return;
+      };
+      
+      setIsLoading(true);
+      setResult(null);
+      setError(null);
 
-    try {
-      const summary = await summarizeMarketInsights({ industry: selectedIndustry });
-      setResult(summary);
-    } catch (e) {
-      console.error(e);
-      setError("Failed to analyze insights. You may have exceeded your API quota. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const summary = await summarizeMarketInsights({ industry: selectedIndustry });
+        setResult(summary);
+      } catch (e) {
+        console.error(e);
+        setError("Failed to analyze insights. You may have exceeded your API quota. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    analyze();
+  }, [selectedIndustry]);
 
   const handleAddIndustry = () => {
     const trimmedIndustry = newIndustry.trim();
@@ -78,7 +86,7 @@ export function InsightsEngine() {
           <CardHeader>
             <CardTitle>Market Insights Engine</CardTitle>
             <CardDescription>
-              Select an industry and click &quot;Analyze&quot; to see the latest trends.
+              Select an industry to automatically see the latest trends.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -113,10 +121,6 @@ export function InsightsEngine() {
                 </Button>
               </div>
             </div>
-             <Button onClick={handleAnalyze} className="w-full" disabled={isLoading}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                {isLoading ? "Analyzing..." : "Analyze Industry"}
-              </Button>
           </CardContent>
         </Card>
       </div>
@@ -168,7 +172,7 @@ export function InsightsEngine() {
             {!isLoading && !result && !error && (
               <div className="flex items-center justify-center rounded-md border border-dashed p-10">
                 <p className="text-center text-muted-foreground">
-                  Select an industry and click &quot;Analyze Industry&quot; to see insights.
+                  No insights found.
                 </p>
               </div>
             )}
